@@ -5,6 +5,15 @@ ta::helloworld() {
 }
 
 ta::prepare() {
+  # ta::auto_update >/dev/null 2>&1 &
+
+  # zmicro check version
+  local zmicro_version="$(version::zmicro)"
+  if [ "$(semver::compare_gte ${zmicro_version} $PLUGIN_TA_ZMICRO_VERSION)" != "true" ]; then
+    log::info "[$(timestamp)] zmicro version found update, try to update it ..."
+    zmicro update
+  fi
+
   which nvm >>/dev/null 2>&1
   if [ "$?" != "0" ]; then
     log::info "[$(timestamp)] prepare nvm (1) ..."
@@ -47,19 +56,26 @@ ta::prepare() {
   which rimraf >>/dev/null
   if [ "$?" != "0" ]; then
     log::info "[$(timestamp)] rimraf is not installed, try to install it ..."
-    npm i -g rimraf
+    npm i -g rimraf # --force
   fi
 
   which gpm >>/dev/null
   if [ "$?" != "0" ]; then
     log::info "[$(timestamp)] gpm is not installed, try to install it ..."
-    npm i -g @cliz/gpm
+    npm i -g @cliz/gpm # --force
+  else
+    # check version
+    local gpm_version="v$(gpm --version)"
+    if [ "$(semver::compare_gte ${gpm_version} $PLUGIN_TA_GPM_VERSION)" != "true" ]; then
+      log::info "[$(timestamp)] gpm version found update, try to update it ..."
+      npm i -g @cliz/gpm # @$PLUGIN_TA_GPM_VERSION --force
+    fi
   fi
 
   which nrm >>/dev/null
   if [ "$?" != "0" ]; then
     log::info "[$(timestamp)] nrm is not installed, try to install it ..."
-    npm i -g @cliz/nrm
+    npm i -g @cliz/nrm # --force
   fi
 }
 
